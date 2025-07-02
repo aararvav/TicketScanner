@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    select, button { padding: 10px; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <h2>Dashboard</h2>
+  <form method="post">
+    <label>Select event:</label>
+    <select name="event" onchange="this.form.submit()">
+      {% for e in events %}
+        <option value="{{ e['name'] }}" {% if e['name'] == event %}selected{% endif %}>
+          {{ e['name'] }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
+  {% if event %}
+  <h3>Event: {{ event }}</h3>
+  <ul>
+    <li><a href="/scan">Scan QR</a></li>
+    <li><a href="/list">View Entries</a></li>
+    <li><a href="/add">Add New Entry</a></li>
+  </ul>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Entries</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+
+
+<body>
+  <h2>Entries for {{ event }}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Ticket ID</th>
+        <th>Name</th>
+        <th>Num People</th>
+        <th>Seats Left</th>
+        <th>Checked In</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for entry in entries %}
+      <tr>
+        <td>{{ entry['ticket_id'] }}</td>
+        <td>{{ entry['name'] }}</td>
+        <td>{{ entry['num_people'] }}</td>
+        <td>{{ entry['seats_left'] }}</td>
+        <td>{{ entry['checked_in'] }}</td>
+        <td>
+          {% if entry['seats_left'] > 0 %}
+            <button onclick="manualCheckin('{{ entry['ticket_id'] }}')">Manual Check-in</button>
+          {% else %}
+            All arrived
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+
+  </table>
+  <p><a href="/dashboard">Back to Dashboard</a></p>
+
+  
+  <script>
+    function manualCheckin(ticket_id) {
+      fetch('/manual_checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ticket_id: ticket_id })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert(data.message);
+        window.location.reload();
+      });
+    }
+  </script>
+
+
+
+</body>
+</html>

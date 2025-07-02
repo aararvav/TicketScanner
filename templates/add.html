@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add New Entry</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    form { display: flex; flex-direction: column; max-width: 300px; }
+    input, button { margin-bottom: 10px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Add New Entry</h2>
+  <form method="post">
+  <label>Name:</label><br>
+  <input type="text" name="name" required><br>
+  <label>Number of people:</label><br>
+  <input type="number" name="num_people" required><br>
+  <label>Amount paid:</label><br>
+  <input type="number" name="amount" required><br>
+  <input type="submit" value="Create Ticket">
+  </form>
+
+  {% if qr_filename %}
+    <h3>QR Generated!</h3>
+    <img src="/static/qrcodes/{{ qr_filename }}" alt="QR Code" width="200" />
+    <p>Send this QR to the guest manually.</p>
+  {% endif %}
+  <p><a href="/dashboard">Back to Dashboard</a></p>
+</body>
+</html>

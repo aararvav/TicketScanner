@@ -1,0 +1,102 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+  <title>QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #result { margin-top: 20px; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h2>Scan Ticket QR</h2>
+  <div id="reader" style="width:300px"></div>
+  <div id="result"></div>
+  <script>
+    function sendScan(ticket_id) {
+      fetch('/scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
+        body: JSON.stringify({ticket_id: ticket_id})
+      })
+      .then(r => r.json())
+      .then(data => {
+        if(data.status === "valid") {
+          document.getElementById("result").innerHTML =
+            `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
+        } else {
+          document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
+        }
+      });
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      (decodedText) => {
+        sendScan(decodedText);
+      },
+      (errorMessage) => {
+        console.log(errorMessage);
+      }
+    ).catch((err) => {
+      console.error(err);
+    });
+  </script>
+</body>
+</html> -->
+
+
+
+<!-- ...................................................................... -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #result { margin-top: 20px; font-size: 1.2em; }
+  </style>
+</head>
+<body>
+  <h2>Scan Ticket QR</h2>
+  <div id="reader" style="width:300px"></div>
+  <div id="result"></div>
+
+  <script>
+    function sendScan(ticket_id) {
+      fetch('/scan', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
+        body: JSON.stringify({ticket_id: ticket_id})
+      })
+      .then(r => r.json())
+      .then(data => {
+        if(data.status === "valid") {
+          document.getElementById("result").innerHTML =
+            `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
+        } else {
+          document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
+        }
+      });
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      sendScan(decodedText);
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+</body>
+</html>
