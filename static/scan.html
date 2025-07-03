@@ -1,76 +1,56 @@
-<!-- <!DOCTYPE html>
-<html>
-<head>
-  <title>QR Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #result { margin-top: 20px; font-size: 1.2em; }
-  </style>
-</head>
-<body>
-  <h2>Scan Ticket QR</h2>
-  <div id="reader" style="width:300px"></div>
-  <div id="result"></div>
-  <script>
-    function sendScan(ticket_id) {
-      fetch('/scan', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        credentials: 'include',
-        body: JSON.stringify({ticket_id: ticket_id})
-      })
-      .then(r => r.json())
-      .then(data => {
-        if(data.status === "valid") {
-          document.getElementById("result").innerHTML =
-            `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
-        } else {
-          document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
-        }
-      });
-    }
-
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: 250
-      },
-      (decodedText) => {
-        sendScan(decodedText);
-      },
-      (errorMessage) => {
-        console.log(errorMessage);
-      }
-    ).catch((err) => {
-      console.error(err);
-    });
-  </script>
-</body>
-</html> -->
-
-
-
-<!-- ...................................................................... -->
-
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>QR Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    #result { margin-top: 20px; font-size: 1.2em; }
+    body {
+      background-color: #1b4042;
+      color: #aba5a5;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      color: #aba5a5;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+      border: 2px solid #259797;
+      border-radius: 12px;
+    }
+    #result {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 1.2em;
+      color: #aba5a5;
+    }
+    a {
+      color: #259797;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a:hover {
+      color: #50d6d4da;
+    }
   </style>
 </head>
 <body>
-  <h2>Scan Ticket QR</h2>
-  <div id="reader" style="width:300px"></div>
-  <div id="result"></div>
-
+  <div class="container text-center">
+    <h2>Scan Ticket QR</h2>
+    <div id="reader"></div>
+    <div id="result"></div>
+    <p class="mt-3"><a href="/dashboard">Back to Dashboard</a></p>
+  </div>
+  
   <script>
     function sendScan(ticket_id) {
       fetch('/scan', {

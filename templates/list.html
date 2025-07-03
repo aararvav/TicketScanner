@@ -2,51 +2,99 @@
 <html>
 <head>
   <title>All Entries</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    h2 {
+      color: #aba5a5;
+    }
+    table {
+      width: 100%;
+      background-color: #1e1e1e;
+      border-collapse: collapse;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      color: #ffffff;
+    }
+    th {
+      background-color: #259797;
+      color: #ffffff;
+    }
+    tr:hover {
+      background-color: #2e2e2e;
+    }
+    button {
+      background-color: #259797;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      margin: 2px;
+      border-radius: 6px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #50d6d4da;
+    }
+    a {
+      color: #259797;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a:hover {
+      color: #50d6d4da;
+    }
   </style>
 </head>
+<body class="p-4">
+  <div class="container">
+    <h2 class="mb-4">Entries for {{ event }}</h2>
+    <div class="table-responsive">
+      <table class="table table-dark table-striped">
+        <thead>
+          <tr>
+            <th>Ticket ID</th>
+            <th>Name</th>
+            <th>Num People</th>
+            <th>Seats Left</th>
+            <th>Checked In</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in entries %}
+          <tr>
+            <td>{{ entry['ticket_id'] }}</td>
+            <td>{{ entry['name'] }}</td>
+            <td>{{ entry['num_people'] }}</td>
+            <td>{{ entry['seats_left'] }}</td>
+            <td>{{ entry['checked_in'] }}</td>
+            <td>
+              {% if entry['seats_left'] > 0 %}
+                <button onclick="manualCheckin('{{ entry['ticket_id'] }}')">Manual Check-in</button>
+              {% else %}
+                All arrived
+              {% endif %}
+              <button onclick="deleteGuest('{{ entry['ticket_id'] }}')">Delete</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-3"><a href="/dashboard">Back to Dashboard</a></p>
+  </div>
 
-
-<body>
-  <h2>Entries for {{ event }}</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Ticket ID</th>
-        <th>Name</th>
-        <th>Num People</th>
-        <th>Seats Left</th>
-        <th>Checked In</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for entry in entries %}
-      <tr>
-        <td>{{ entry['ticket_id'] }}</td>
-        <td>{{ entry['name'] }}</td>
-        <td>{{ entry['num_people'] }}</td>
-        <td>{{ entry['seats_left'] }}</td>
-        <td>{{ entry['checked_in'] }}</td>
-        <td>
-          {% if entry['seats_left'] > 0 %}
-            <button onclick="manualCheckin('{{ entry['ticket_id'] }}')">Manual Check-in</button>
-          {% else %}
-            All arrived
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-
-    </tbody>
-
-  </table>
-  <p><a href="/dashboard">Back to Dashboard</a></p>
-
-  
   <script>
     function manualCheckin(ticket_id) {
       fetch('/manual_checkin', {
@@ -61,9 +109,22 @@
         window.location.reload();
       });
     }
+
+    function deleteGuest(ticket_id) {
+      if(confirm("Are you sure you want to delete this guest?")) {
+        fetch('/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ticket_id: ticket_id })
+        })
+        .then(response => response.json())
+        .then(data => {
+          alert(data.message);
+          window.location.reload();
+        });
+      }
+    }
   </script>
-
-
-
 </body>
 </html>

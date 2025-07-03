@@ -267,6 +267,24 @@ def manual_checkin():
     else:
         conn.close()
         return jsonify({"message": "No seats left to check in."})
+    
+
+@app.route('/delete', methods=['POST'])
+def delete_guest():
+    if 'logged_in' not in session:
+        return jsonify({"message": "Unauthorized"}), 401
+
+    data = request.get_json()
+    ticket_id = data.get('ticket_id')
+
+    conn = sqlite3.connect('database.db')
+    c = conn.cursor()
+    c.execute("DELETE FROM tickets WHERE ticket_id = ?", (ticket_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"message": "Guest deleted."})
+
 
 
 
