@@ -80,11 +80,19 @@ def events():
 def dashboard():
     if 'logged_in' not in session:
         return redirect(url_for('login'))
+
+    conn = get_db_connection()  # 🔹 Add this line
+
     if request.method == 'POST':
         selected_event = request.form['event']
         session['event'] = selected_event
+
     event = session.get('event')
-    return render_template('dashboard.html', event=event)
+
+    events = conn.execute("SELECT name FROM events").fetchall()  # 🔹 Fetch all event names
+    conn.close()  # 🔹 Close connection
+
+    return render_template('dashboard.html', event=event, events=events)
 
 
 @app.route('/add', methods=['GET', 'POST'])
@@ -96,6 +104,7 @@ def add_entry():
         name = request.form['name']
         num_people = int(request.form['num_people'])
         amount = int(request.form['amount'])
+        user_id = request.form.get('user_id', '')
         event = session.get('event', 'N/A')
 
 
@@ -106,9 +115,10 @@ def add_entry():
         conn = sqlite3.connect('database.db')
         c = conn.cursor()
         c.execute(
-          "INSERT INTO tickets (ticket_id, name, num_people, checked_in, seats_left, event) VALUES (?, ?, ?, 0, ?, ?)",
-          (ticket_id, name, num_people, num_people, event)
+          "INSERT INTO tickets (ticket_id, name, num_people, checked_in, seats_left, event, user_id) VALUES (?, ?, ?, 0, ?, ?, ?)",
+          (ticket_id, name, num_people, num_people, event, user_id)
         )
+
 
         conn.commit()
         conn.close()
@@ -121,56 +131,85 @@ def add_entry():
     return render_template('add.html', qr_filename=qr_filename)
 
 
+# @app.route('/scan', methods=['POST'])
+# def scan_ticket():
+#     if 'logged_in' not in session:
+#         return jsonify({"error": "Unauthorized"}), 401
+#     data = request.json
+#     ticket_id = data.get('ticket_id')
+#     conn = get_db_connection()
+#     ticket = conn.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,)).fetchone()
+#     conn.close()
+#     if ticket is None:
+#         return jsonify({"status": "invalid", "message": "Ticket not found"})
+#     if ticket['seats_used'] >= ticket['total_seats']:
+#         return jsonify({"status": "invalid", "message": "Ticket already fully used"})
+#     seats_left = ticket['total_seats'] - ticket['seats_used']
+#     return jsonify({
+#         "status": "valid",
+#         "name": ticket['name'],
+#         "seats_left": seats_left
+#     })
 
-
-
-@app.route('/scan', methods=['POST'])
+@app.route('/scan', methods=['GET', 'POST'])
 def scan_ticket():
     if 'logged_in' not in session:
-        return jsonify({"error": "Unauthorized"}), 401
+        return redirect(url_for('login'))
+
+    if request.method == 'GET':
+        return render_template('scan.html')
+
+    # POST logic: handling scanned QR
     data = request.json
     ticket_id = data.get('ticket_id')
     conn = get_db_connection()
     ticket = conn.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,)).fetchone()
     conn.close()
+
     if ticket is None:
         return jsonify({"status": "invalid", "message": "Ticket not found"})
-    if ticket['seats_used'] >= ticket['total_seats']:
+
+    if ticket['seats_left'] <= 0:
         return jsonify({"status": "invalid", "message": "Ticket already fully used"})
-    seats_left = ticket['total_seats'] - ticket['seats_used']
+
     return jsonify({
         "status": "valid",
         "name": ticket['name'],
-        "seats_left": seats_left
+        "seats_left": ticket['seats_left']
     })
+
+
+
 
 @app.route('/checkin', methods=['POST'])
 def checkin():
     if 'logged_in' not in session:
         return jsonify({"error": "Unauthorized"}), 401
+
     data = request.json
     ticket_id = data.get('ticket_id')
-    num_people = data.get('num_people', 1)
+    num_people = int(data.get('num_people', 1))
+
     conn = get_db_connection()
-    ticket = conn.execute("SELECT * FROM tickets WHERE ticket_id = ?", (ticket_id,)).fetchone()
+    ticket = conn.execute("SELECT seats_left, checked_in FROM tickets WHERE ticket_id = ?", (ticket_id,)).fetchone()
+
     if ticket is None:
         conn.close()
         return jsonify({"status": "invalid", "message": "Ticket not found"})
-    seats_left = ticket['total_seats'] - ticket['seats_used']
-    if num_people > seats_left:
+
+    if num_people > ticket['seats_left']:
         conn.close()
-        return jsonify({"status": "invalid", "message": "Not enough seats remaining"})
-    new_used = ticket['seats_used'] + num_people
-    status = "active"
-    if new_used == ticket['total_seats']:
-        status = "fully used"
-    conn.execute(
-        "UPDATE tickets SET seats_used = ?, status = ? WHERE ticket_id = ?",
-        (new_used, status, ticket_id)
-    )
+        return jsonify({"status": "invalid", "message": "Not enough seats left"})
+
+    new_checked_in = ticket['checked_in'] + num_people
+    new_seats_left = ticket['seats_left'] - num_people
+
+    conn.execute("UPDATE tickets SET checked_in = ?, seats_left = ? WHERE ticket_id = ?",
+                 (new_checked_in, new_seats_left, ticket_id))
     conn.commit()
     conn.close()
-    return jsonify({"status": "success", "message": f"{num_people} guests checked in, {ticket['total_seats'] - new_used} left"})
+
+    return jsonify({"status": "success", "message": f"{new_seats_left} left."})
 
 
 import qrcode
@@ -215,11 +254,12 @@ def create_ticket():
 
 from flask import send_from_directory
 
-@app.route('/scanner')
-def scanner_page():
-    # if 'logged_in' not in session:
-    #     return "Unauthorized", 401
-    return send_from_directory('static', 'scan.html')
+@app.route('/scan')
+def scan_page():
+    if 'logged_in' not in session:
+        return redirect(url_for('login'))
+    return render_template('scan.html')
+
 
 
 
@@ -285,6 +325,21 @@ def delete_guest():
 
     return jsonify({"message": "Guest deleted."})
 
+
+@app.route('/delete_event', methods=['POST'])
+def delete_event():
+    if 'logged_in' not in session:
+        return jsonify({"success": False, "message": "Unauthorized"})
+
+    data = request.get_json()
+    event_name = data.get('name')
+
+    conn = get_db_connection()
+    conn.execute("DELETE FROM events WHERE name = ?", (event_name,))
+    conn.commit()
+    conn.close()
+
+    return jsonify({"success": True})
 
 
 

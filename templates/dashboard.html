@@ -3,67 +3,47 @@
 <head>
   <title>Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
     body {
       background-color: #121212;
       color: #f0f0f0;
-    }
-    .card {
-      background-color: #1e1e1e;
-      border: none;
-      border-radius: 12px;
-      transition: transform 0.3s ease;
       padding: 20px;
+      font-family: sans-serif;
     }
-    .card:hover {
-      transform: scale(1.02);
-    }
-    .btn-primary {
-      background-color: #259797;
-      border: none;
-      transition: background-color 0.3s ease;
-    }
-    .btn-primary:hover {
-      background-color: #50d6d4da;
+    h2, h3 {
+      color: #aba5a5;
     }
     .form-select {
       background-color: #aba5a5;
-      color: #ffffff;
+      color: #000;
       border: none;
     }
-    .form-select:focus {
-      background-color: #aba5a5;
-      color: #fff;
+    .btn {
+      background-color: #259797;
+      border: none;
+      color: white;
+      transition: background-color 0.3s ease;
     }
-    h2 {
-      color: #aba5a5;
+    .btn:hover {
+      background-color: #50d6d4da;
     }
-    h3 {
-      color: #aba5a5;
-    }
-    label {
-      color: #aba5a5;
-    }
-    .link-list a {
-      color: #64d2b8;
+    a {
+      color: #259797;
       text-decoration: none;
-      transition: color 0.3s ease;
     }
-    .link-list a:hover {
-      color: #0e526dda;
+    a:hover {
+      color: #50d6d4da;
     }
   </style>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100">
-  <div class="card w-100" style="max-width: 400px;">
-    <h2 class="text-center mb-4">Dashboard</h2>
-    <form method="post">
+<body>
+  <div class="container text-center">
+    <h2>Dashboard</h2>
+
+    <form method="post" class="mb-4">
       <label for="event">Select Event:</label>
-      <select class="form-select mb-3" name="event" id="event" onchange="this.form.submit()">
+      <select class="form-select w-50 mx-auto" name="event" id="event" onchange="this.form.submit()">
         {% for e in events %}
           <option value="{{ e['name'] }}" {% if e['name'] == event %}selected{% endif %}>
             {{ e['name'] }}
@@ -73,12 +53,12 @@
     </form>
 
     {% if event %}
-    <h3 class="text-center">Event: {{ event }}</h3>
-    <ul class="list-unstyled mt-3 text-center link-list">
-      <li class="mb-2"><a href="/scanner">Scan QR</a></li>
-      <li class="mb-2"><a href="/list">View Entries</a></li>
-      <li class="mb-2"><a href="/add">Add New Entry</a></li>
-    </ul>
+    <h3>Event: {{ event }}</h3>
+    <div class="d-grid gap-3 w-50 mx-auto">
+      <a class="btn" href="/scan">Scan QR</a>
+      <a class="btn" href="/list">View Entries</a>
+      <a class="btn" href="/add">Add New Entry</a>
+    </div>
     {% endif %}
   </div>
 </body>
