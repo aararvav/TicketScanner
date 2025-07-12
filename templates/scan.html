@@ -73,9 +73,12 @@
   <script>
   let html5QrcodeScanner;
   let scannerActive = true;
+  let processingScan = false;
 
   function sendScan(ticket_id) {
-    if (!scannerActive) return;
+    if (!scannerActive || processingScan) return;
+    processingScan = true;
+    
     fetch('/scan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -101,7 +104,7 @@
             .then(result => {
               if (result.status === "success") {
                 document.getElementById("result").innerHTML +=
-                  `<br>✅ Last guest checked in successfully.<br>${result.message}`;
+                  `<br>✅ 1 guest checked in.<br>${result.message}`;
                 // Stop scanner and prevent further scans
                 if (html5QrcodeScanner) {
                   html5QrcodeScanner.clear();
@@ -112,10 +115,12 @@
                 document.getElementById("result").innerHTML +=
                   `<br>❌ Check-in failed: ${result.message}`;
               }
+              processingScan = false;
             })
             .catch(error => {
               document.getElementById("result").innerHTML +=
                 `<br>❌ Error during check-in: ${error.message}`;
+              processingScan = false;
             });
           }, 500);
         } else if (data.seats_left > 1) {
@@ -133,14 +138,23 @@
             .then(result => {
               document.getElementById("result").innerHTML +=
                 `<br>✅ ${num_people} guests checked in.<br>${result.message}`;
+              processingScan = false;
             });
           } else {
             document.getElementById("result").innerHTML += `<br>❌ Invalid number entered.`;
+            processingScan = false;
           }
+        } else {
+          processingScan = false;
         }
       } else {
         document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
+        processingScan = false;
       }
+    })
+    .catch(error => {
+      document.getElementById("result").innerHTML = `❌ Error: ${error.message}`;
+      processingScan = false;
     });
   }
 
