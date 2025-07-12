@@ -169,7 +169,16 @@ def scan_ticket():
     if ticket is None:
         return jsonify({"status": "invalid", "message": "Ticket not found"})
 
-    if ticket['seats_left'] <= 0:
+    # Special handling for exactly 1 seat left to prevent race conditions
+    if ticket['seats_left'] == 1:
+        # For exactly 1 seat left, we'll allow the scan but indicate it's the last entry
+        return jsonify({
+            "status": "valid",
+            "name": ticket['name'],
+            "seats_left": ticket['seats_left'],
+            "is_last_entry": True
+        })
+    elif ticket['seats_left'] <= 0:
         return jsonify({"status": "invalid", "message": "Ticket already fully used"})
 
     return jsonify({
@@ -209,7 +218,11 @@ def checkin():
     conn.commit()
     conn.close()
 
-    return jsonify({"status": "success", "message": f"{new_seats_left} left."})
+    # Special message for the last entry
+    if new_seats_left == 0:
+        return jsonify({"status": "success", "message": "All guests checked in. Ticket fully used."})
+    else:
+        return jsonify({"status": "success", "message": f"{new_seats_left} left."})
 
 
 import qrcode
@@ -254,11 +267,7 @@ def create_ticket():
 
 from flask import send_from_directory
 
-@app.route('/scan')
-def scan_page():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-    return render_template('scan.html')
+# Removed duplicate scan route to prevent conflicts
 
 
 
@@ -346,5 +355,5 @@ def delete_event():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5050)
 

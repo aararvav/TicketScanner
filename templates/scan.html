@@ -71,68 +71,88 @@
   </div>
 
   <script>
+  let html5QrcodeScanner;
+  let scannerActive = true;
+
   function sendScan(ticket_id) {
-  fetch('/scan', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({ ticket_id: ticket_id })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.status === "valid") {
-      // Show basic ticket info FIRST
-      document.getElementById("result").innerHTML =
-        `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
+    if (!scannerActive) return;
+    fetch('/scan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ ticket_id: ticket_id })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.status === "valid") {
+        document.getElementById("result").innerHTML =
+          `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
 
-      if (data.seats_left === 1) {
-        // Auto check-in for 1 seat
-        fetch('/checkin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ ticket_id: ticket_id, num_people: 1 })
-        })
-        .then(res => res.json())
-        .then(result => {
-          document.getElementById("result").innerHTML +=
-            `<br>✅ 1 guest checked in.<br>${result.message}`;
-        });
-      } else {
-        // Ask how many people arrived
-        const num = prompt(`Valid Ticket for ${data.name}.\nHow many guests arrived? (max ${data.seats_left})`);
-        const num_people = parseInt(num);
+        if (data.is_last_entry) {
+          document.getElementById("result").innerHTML += `<br>⚠️ This is the last entry for this ticket.`;
+          setTimeout(() => {
+            fetch('/checkin', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ ticket_id: ticket_id, num_people: 1 })
+            })
+            .then(res => res.json())
+            .then(result => {
+              if (result.status === "success") {
+                document.getElementById("result").innerHTML +=
+                  `<br>✅ Last guest checked in successfully.<br>${result.message}`;
+                // Stop scanner and prevent further scans
+                if (html5QrcodeScanner) {
+                  html5QrcodeScanner.clear();
+                }
+                scannerActive = false;
+                document.getElementById("result").innerHTML += `<br><button class='btn btn-success mt-3' onclick='window.location.reload()'>Scan Another Ticket</button>`;
+              } else {
+                document.getElementById("result").innerHTML +=
+                  `<br>❌ Check-in failed: ${result.message}`;
+              }
+            })
+            .catch(error => {
+              document.getElementById("result").innerHTML +=
+                `<br>❌ Error during check-in: ${error.message}`;
+            });
+          }, 500);
+        } else if (data.seats_left > 1) {
+          const num = prompt(`Valid Ticket for ${data.name}.\nHow many guests arrived? (max ${data.seats_left})`);
+          const num_people = parseInt(num);
 
-        if (!isNaN(num_people) && num_people > 0 && num_people <= data.seats_left) {
-          fetch('/checkin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ ticket_id: ticket_id, num_people: num_people })
-          })
-          .then(res => res.json())
-          .then(result => {
-            document.getElementById("result").innerHTML +=
-              `<br>✅ ${num_people} guests checked in.<br>${result.message}`;
-          });
-        } else {
-          document.getElementById("result").innerHTML += `<br>❌ Invalid number entered.`;
+          if (!isNaN(num_people) && num_people > 0 && num_people <= data.seats_left) {
+            fetch('/checkin', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({ ticket_id: ticket_id, num_people: num_people })
+            })
+            .then(res => res.json())
+            .then(result => {
+              document.getElementById("result").innerHTML +=
+                `<br>✅ ${num_people} guests checked in.<br>${result.message}`;
+            });
+          } else {
+            document.getElementById("result").innerHTML += `<br>❌ Invalid number entered.`;
+          }
         }
+      } else {
+        document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
       }
-    } else {
-      document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
-    }
-  });
-}
-
+    });
+  }
 
   function onScanSuccess(decodedText, decodedResult) {
     sendScan(decodedText);
   }
 
-  let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render(onScanSuccess);
+  window.onload = function() {
+    html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  }
 </script>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
