@@ -1,132 +1,646 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Add New Entry</title>
+  <title>Add Ticket - Ticket Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="/static/css/main.css" rel="stylesheet" />
   <style>
-    body {
-      background-color: #121212;
-      color: #aba5a5;
+    .ticket-card-section {
+      display: flex;
+      justify-content: center;
+      margin-top: 40px;
     }
-    .card {
-      background-color: #1e1e1e;
-      border: none;
-      border-radius: 12px;
-      padding: 20px;
+    
+    .ticket-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      padding: 0;
       max-width: 400px;
-      margin: auto;
-      margin-top: 50px;
-      transition: transform 0.3s ease;
+      width: 100%;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      position: relative;
     }
-    .card:hover {
-      transform: scale(1.02);
+    
+    .ticket-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.1)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+      opacity: 0.3;
     }
-    .btn-primary {
-      background-color: #259797;
-      border: none;
-      transition: background-color 0.3s ease;
-      color: #fff;
+    
+    .ticket-header {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(10px);
     }
-    .btn-primary:hover {
-      background-color: #50d6d4da;
+    
+    .event-info {
+      color: white;
     }
-    .form-control {
-      background-color: #aba5a5;
-      color: #000;
-      border: none;
+    
+    .event-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
-    .form-control:focus {
-      background-color: #aba5a5;
-      color: #000;
+    
+    .event-date {
+      font-size: 14px;
+      margin: 4px 0 0 0;
+      opacity: 0.9;
     }
-    h2, h3, label, p {
-      color: #aba5a5;
+    
+    .ticket-logo {
+      color: white;
+      font-size: 24px;
+      opacity: 0.8;
+    }
+    
+    .ticket-body {
+      padding: 24px;
+      background: white;
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    
+    .guest-info {
+      flex: 1;
+    }
+    
+    .guest-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 8px 0;
+    }
+    
+    .guest-details {
+      color: #666;
+      font-size: 14px;
+      margin: 0;
+      line-height: 1.4;
+    }
+    
+    .guest-details i {
+      width: 16px;
+      margin-right: 4px;
+      color: #667eea;
+    }
+    
+    .qr-section {
       text-align: center;
     }
-    a {
-      color: #259797;
-      text-decoration: none;
-      transition: color 0.3s ease;
+    
+    .qr-image {
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
-    a:hover {
-      color: #50d6d4da;
+    
+    .ticket-id {
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      color: #999;
+      margin: 4px 0 0 0;
     }
-    img {
-      display: block;
-      margin: 20px auto;
+    
+    .ticket-footer {
+      background: #f8f9fa;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .ticket-type .badge {
+      background: #667eea;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .ticket-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>Add New Entry</h2>
-      <form method="post">
-        <div class="mb-3">
-          <label for="name" class="form-label">Name:</label>
-          <input type="text" name="name" id="name" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="num_people" class="form-label">Number of people:</label>
-          <input type="number" name="num_people" id="num_people" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="amount" class="form-label">Amount paid:</label>
-          <input type="number" name="amount" id="amount" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label for="user_id" class="form-label">User id:</label>
-          <input type="text" name="user_id" id="user_id" class="form-control">
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-ticket-alt"></i>
+        <span>TicketScanner</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/scan" class="nav-item">
+          <i class="fas fa-qrcode"></i>
+          <span>Scan QR</span>
+        </a>
+        <a href="/add" class="nav-item active">
+          <i class="fas fa-plus"></i>
+          <span>Add Ticket</span>
+        </a>
+        <a href="/list" class="nav-item">
+          <i class="fas fa-list"></i>
+          <span>Guest List</span>
+        </a>
+        <a href="/events" class="nav-item">
+          <i class="fas fa-calendar"></i>
+          <span>Events</span>
+        </a>
+        <a href="/stats" class="nav-item">
+          <i class="fas fa-chart-bar"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="/settings" class="nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <a href="/logout" class="nav-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else category }} animate-fade-in">
+              <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="glass-card">
+        <div class="text-center mb-4">
+          <div class="action-icon" style="margin-bottom: 20px;">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+          <h2 class="gradient-text">Create New Ticket</h2>
+          <p class="text-secondary">Add a new guest to your event</p>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Create Ticket</button>
-      </form>
+        <form method="post" id="ticketForm" class="modern-form">
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="name">Guest Name *</label>
+              <input type="text" name="name" id="name" class="form-input" required>
+              <div class="input-icon">
+                <i class="fas fa-user"></i>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" name="email" id="email" class="form-input">
+              <div class="input-icon">
+                <i class="fas fa-envelope"></i>
+              </div>
+            </div>
+          </div>
 
-      {% if qr_filename %}
-        <h3>QR Generated!</h3>
-        <img src="/static/qrcodes/{{ qr_filename }}" alt="QR Code" id="qrImage" width="200" />
-        <p>Send this QR to the guest manually.</p>
-      
-        <!-- ✅ Share button -->
-        <button class="btn btn-primary w-100 mt-2" id="shareBtn">Share QR</button>
-      {% endif %}
-      
-      <p class="mt-3"><a href="/dashboard">Back to Dashboard</a></p>
-    </div>
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="tel" name="phone" id="phone" class="form-input">
+              <div class="input-icon">
+                <i class="fas fa-phone"></i>
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="num_people">Number of People *</label>
+              <input type="number" name="num_people" id="num_people" class="form-input" min="1" value="1" required>
+              <div class="input-icon">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="form-group">
+              <label for="amount">Amount Paid</label>
+              <div class="input-group">
+                <span class="input-group-text" style="background: var(--bg-secondary); border: 2px solid var(--border-color); color: var(--text-primary); border-right: none; border-radius: 12px 0 0 12px;">₹</span>
+                <input type="number" name="amount" id="amount" class="form-input" min="0" step="0.01" value="0" style="border-radius: 0 12px 12px 0; border-left: none;">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="ticket_type">Ticket Type</label>
+              <select name="ticket_type" id="ticket_type" class="form-input">
+                <option value="regular">Regular</option>
+                <option value="vip">VIP</option>
+                <option value="early_bird">Early Bird</option>
+                <option value="student">Student</option>
+              </select>
+              <div class="input-icon">
+                <i class="fas fa-tag"></i>
+              </div>
+            </div>
+          </div>
+
+
+
+          <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea name="notes" id="notes" class="form-input" rows="3" placeholder="Any special notes about this guest..."></textarea>
+            <div class="input-icon" style="top: 20px;">
+              <i class="fas fa-sticky-note"></i>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button type="submit" class="btn-modern">
+              <i class="fas fa-plus"></i>
+              Create Ticket
+            </button>
+          </div>
+        </form>
+
+        {% if qr_filename %}
+          <div class="e-ticket-section mt-5">
+            <div class="e-ticket">
+              <div class="e-ticket-header">
+                <div class="event-details">
+                  <h2 class="event-name">{{ event_info.name if event_info else session.get('event', 'Event') }}</h2>
+                  <div class="event-meta">
+                    <p class="event-date-time">
+                      {% if event_info and event_info.date %}
+                        {{ event_info.date }}
+                        {% if event_info.time %} · {{ event_info.time }}{% endif %}
+                      {% else %}
+                        Date TBD
+                      {% endif %}
+                    </p>
+                    <p class="event-venue">
+                      {% if event_info and event_info.venue %}
+                        {{ event_info.venue }}
+                      {% elif event_info and event_info.location %}
+                        {{ event_info.location }}
+                      {% else %}
+                        Venue TBD
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+                <div class="ticket-logo">
+                  <i class="fas fa-ticket-alt"></i>
+                </div>
+              </div>
+              
+              <div class="e-ticket-body">
+                <div class="guest-section">
+                  <h3 class="guest-name">{{ request.form.get('name', 'Guest Name') }}</h3>
+                  <p class="guest-subtitle">Guests = {{ request.form.get('num_people', '1') }}</p>
+                  {% if request.form.get('email') %}
+                    <p class="guest-email">{{ request.form.get('email') }}</p>
+                  {% endif %}
+                </div>
+                
+                <div class="qr-section">
+                  <div class="qr-container">
+                    <img src="/static/qrcodes/{{ qr_filename }}" alt="QR Code" class="qr-image" />
+                  </div>
+                  <p class="qr-label">Scan to Enter</p>
+                  <p class="ticket-id">#{{ qr_filename.replace('.png', '') if qr_filename else '' }}</p>
+                </div>
+              </div>
+              
+              <div class="e-ticket-footer">
+                <div class="entry-note">
+                  <p>Strictly Invite Only · Show QR at Entry · 18+ Only</p>
+                </div>
+                {% if event_info and (event_info.organizer_name or event_info.organizer_phone or event_info.organizer_email) %}
+                  <div class="contact-info">
+                    <p class="contact-title">For Queries Contact:</p>
+                    <div class="contact-details">
+                      {% if event_info.organizer_name %}
+                        <p><i class="fas fa-user"></i> {{ event_info.organizer_name }}</p>
+                      {% endif %}
+                      {% if event_info.organizer_phone %}
+                        <p><i class="fas fa-phone"></i> {{ event_info.organizer_phone }}</p>
+                      {% endif %}
+                      {% if event_info.organizer_email %}
+                        <p><i class="fas fa-envelope"></i> {{ event_info.organizer_email }}</p>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endif %}
+                <div class="ticket-actions">
+                  <button class="btn-modern btn-sm" id="shareBtn">
+                    <i class="fas fa-share"></i> Share
+                  </button>
+                  <button class="btn-modern btn-sm" id="downloadBtn">
+                    <i class="fas fa-download"></i> Download
+                  </button>
+                  <button class="btn-modern btn-sm" id="printBtn">
+                    <i class="fas fa-print"></i> Print
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
-  const shareBtn = document.getElementById('shareBtn');
-
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      const img = document.getElementById('qrImage');
-      const response = await fetch(img.src);
-      const blob = await response.blob();
-      const file = new File([blob], "{{ qr_filename }}", { type: blob.type });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: 'Your QR Ticket',
-            text: 'Here is your entry QR ticket.',
-            files: [file]
-          });
-        } catch (err) {
-          alert('Sharing cancelled or failed.');
-        }
-      } else {
-        alert('Sharing not supported on this device.');
+    // Form validation
+    document.getElementById('ticketForm').addEventListener('submit', function(e) {
+      const name = document.getElementById('name').value.trim();
+      const numPeople = document.getElementById('num_people').value;
+      
+      if (name.length < 2) {
+        alert('Name must be at least 2 characters long');
+        e.preventDefault();
+        return;
+      }
+      
+      if (numPeople < 1) {
+        alert('Number of people must be at least 1');
+        e.preventDefault();
+        return;
       }
     });
-  }
-</script>
 
+    function attachTicketActionListeners() {
+      const shareBtn = document.getElementById('shareBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const printBtn = document.getElementById('printBtn');
+      
+      function getTicketData() {
+        const formData = new FormData(document.getElementById('ticketForm'));
+        return {
+          name: formData.get('name') || 'Guest',
+          ticketId: '{{ qr_filename.replace(".png", "") if qr_filename else "" }}',
+          email: formData.get('email') || 'Not provided',
+          phone: formData.get('phone') || 'Not provided',
+          people: formData.get('num_people') || '1',
+          price: formData.get('amount') || '0',
+          event: '{{ event_info.name if event_info else session.get("event", "Event") }}',
+          date: '{{ event_info.date if event_info else "" }}',
+          time: '{{ event_info.time if event_info else "" }}',
+          venue: '{{ event_info.venue if event_info else "" }}',
+          location: '{{ event_info.location if event_info else "" }}'
+        };
+      }
+      
+      if (shareBtn) {
+        shareBtn.onclick = async () => {
+          try {
+            const ticketData = getTicketData();
+            const ticketCard = createEnhancedTicketCard(ticketData);
+            if (typeof html2canvas !== 'undefined') {
+              const canvas = await html2canvas(ticketCard, {
+                width: 800,
+                height: 600,
+                backgroundColor: '#ffffff',
+                scale: 2
+              });
+              canvas.toBlob(async (blob) => {
+                const file = new File([blob], "ticket.png", { type: "image/png" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                  await navigator.share({
+                    title: 'Your Event Ticket',
+                    text: `Ticket for ${ticketData.name}`,
+                    files: [file]
+                  });
+                } else {
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = "ticket.png";
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }
+              });
+            } else {
+              alert('Sharing not available. Please try downloading instead.');
+            }
+          } catch (err) {
+            console.error('Sharing failed:', err);
+            alert('Sharing failed. You can save the ticket manually.');
+          }
+        };
+      }
+      if (downloadBtn) {
+        downloadBtn.onclick = async () => {
+          try {
+            const ticketData = getTicketData();
+            const ticketCard = createEnhancedTicketCard(ticketData);
+            if (typeof html2canvas !== 'undefined') {
+              const canvas = await html2canvas(ticketCard, {
+                width: 800,
+                height: 600,
+                backgroundColor: '#ffffff',
+                scale: 2
+              });
+              canvas.toBlob((blob) => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `ticket_${ticketData.ticketId}.png`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+              });
+            } else {
+              alert('Download not available. Please try sharing instead.');
+            }
+          } catch (err) {
+            console.error('Download failed:', err);
+            alert('Download failed. Please try again.');
+          }
+        };
+      }
+      if (printBtn) {
+        printBtn.onclick = async () => {
+          try {
+            const ticketData = getTicketData();
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+              <html>
+                <head>
+                  <title>Event Ticket</title>
+                  <style>
+                    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+                    .ticket { max-width: 600px; margin: 0 auto; border: 2px solid #333; padding: 20px; }
+                    .header { text-align: center; margin-bottom: 20px; }
+                    .qr-code { text-align: center; margin: 20px 0; }
+                    .qr-code img { max-width: 150px; }
+                    .info { margin: 10px 0; }
+                    .label { font-weight: bold; }
+                  </style>
+                </head>
+                <body>
+                  <div class="ticket">
+                    <div class="header">
+                      <h1>Event Ticket</h1>
+                      <h2>${ticketData.event}</h2>
+                    </div>
+                    <div class="info">
+                      <span class="label">Guest:</span> ${ticketData.name}
+                    </div>
+                    <div class="info">
+                      <span class="label">Ticket ID:</span> ${ticketData.ticketId}
+                    </div>
+                    <div class="info">
+                      <span class="label">Date:</span> ${ticketData.date || 'TBD'}
+                    </div>
+                    <div class="info">
+                      <span class="label">Time:</span> ${ticketData.time || 'TBD'}
+                    </div>
+                    <div class="info">
+                      <span class="label">Venue:</span> ${ticketData.venue || ticketData.location || 'TBD'}
+                    </div>
+                    <div class="info">
+                      <span class="label">Guests:</span> ${ticketData.people}
+                    </div>
+                    <div class="info">
+                      <span class="label">Amount:</span> ₹${ticketData.price}
+                    </div>
+                    <div class="qr-code">
+                      <img src="/static/qrcodes/${ticketData.ticketId}.png" alt="QR Code" onerror="this.style.display='none'">
+                      <p>Scan QR Code for Entry</p>
+                    </div>
+                  </div>
+                </body>
+              </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+          } catch (err) {
+            console.error('Print failed:', err);
+            alert('Print failed. Please try again.');
+          }
+        };
+      }
+    }
+    // Attach listeners on page load and after ticket creation
+    document.addEventListener('DOMContentLoaded', attachTicketActionListeners);
+    // If you dynamically render the ticket card after form submit, call attachTicketActionListeners() again after rendering.
 
+    // Create enhanced ticket card for sharing
+    function createEnhancedTicketCard(ticketData) {
+      const ticketCard = document.createElement('div');
+      ticketCard.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 30px;
+        color: white;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        position: relative;
+        overflow: hidden;
+        font-family: 'Inter', sans-serif;
+      `;
+      
+      ticketCard.innerHTML = `
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h2 style="margin: 0; font-size: 28px; font-weight: 700;">
+            <i class="fas fa-ticket-alt" style="margin-right: 10px;"></i>
+            Event Ticket
+          </h2>
+          <p style="margin: 10px 0 0 0; opacity: 0.9; font-size: 16px;">Entry Pass</p>
+        </div>
+        
+        <div style="margin-bottom: 30px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Guest Name:</span>
+            <span style="font-weight: 700;">${ticketData.name}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Ticket ID:</span>
+            <span style="font-family: monospace; font-weight: 700; background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 4px;">${ticketData.ticketId}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Event:</span>
+            <span style="font-weight: 700;">${ticketData.event}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Date:</span>
+            <span>${ticketData.date || 'TBD'}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Time:</span>
+            <span>${ticketData.time || 'TBD'}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Venue:</span>
+            <span>${ticketData.venue || ticketData.location || 'TBD'}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Guests:</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-weight: 700;">${ticketData.people}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 16px;">
+            <span style="font-weight: 600; opacity: 0.9;">Amount:</span>
+            <span style="font-weight: 700; color: #00d4aa;">₹${ticketData.price}</span>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+          <div style="background: white; border-radius: 12px; padding: 20px; display: inline-block;">
+            <img src="/static/qrcodes/${ticketData.ticketId}.png" alt="QR Code" style="max-width: 120px; height: auto;" onerror="this.style.display='none'">
+          </div>
+          <p style="margin-top: 15px; opacity: 0.9; font-size: 14px;">Scan this QR code at the event entrance</p>
+        </div>
+      `;
+      
+      return ticketCard;
+    }
 
+    // Add active class to current page
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const navItems = document.querySelectorAll('.nav-item');
+      
+      navItems.forEach(item => {
+        if (item.getAttribute('href') === currentPath) {
+          item.classList.add('active');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
+

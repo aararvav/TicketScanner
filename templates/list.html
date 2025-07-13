@@ -1,193 +1,960 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>All Entries</title>
+  <title>Guest List - Ticket Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="/static/css/main.css" rel="stylesheet" />
   <style>
-    body {
-      background-color: #121212;
-      color: #f0f0f0;
+    .list-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 20px;
     }
-    h2 {
-      color: #aba5a5;
+    
+    .list-title {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
     }
-    table {
-      width: 100%;
-      background-color: #1e1e1e;
-      border-collapse: collapse;
-      border-radius: 12px;
+    
+    .list-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    
+    .search-box {
+      position: relative;
+      max-width: 300px;
+    }
+    
+    .search-box input {
+      padding-left: 40px;
+    }
+    
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+    
+    .table-container {
+      background: var(--bg-card);
+      border-radius: 16px;
       overflow: hidden;
+      border: 1px solid var(--border-color);
     }
-    th, td {
-      border: 1px solid #333;
-      padding: 10px;
-      color: #ffffff;
+    
+    .table-modern {
+      margin: 0;
+    }
+    
+    .table-modern th {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 20px 16px;
+      border-bottom: 2px solid var(--border-color);
+      white-space: nowrap;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .table-modern td {
+      padding: 20px 16px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      vertical-align: middle;
+      font-size: 14px;
+    }
+    
+    .table-modern tr {
+      transition: all 0.3s ease;
+    }
+    
+    .table-modern tr:hover {
+      background: var(--bg-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .guest-name-cell {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    
+    .ticket-id-cell {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      background: var(--bg-secondary);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      display: inline-block;
+    }
+    
+    .status-cell {
       text-align: center;
     }
-    th {
-      background-color: #259797;
-      color: #ffffff;
+    
+    .amount-cell {
+      font-weight: 600;
+      color: var(--success-color);
     }
-    tr:hover {
-      background-color: #2e2e2e;
+    
+    .people-cell {
+      text-align: center;
     }
-    button {
-      background-color: #259797;
-      color: #fff;
+    
+    .people-badge {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .status-checked-in {
+      background: rgba(0, 212, 170, 0.2);
+      color: var(--success-color);
+    }
+    
+    .status-pending {
+      background: rgba(255, 165, 2, 0.2);
+      color: var(--warning-color);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
       border: none;
-      padding: 6px 12px;
-      margin: 2px;
-      border-radius: 6px;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background-color: #50d6d4da;
-    }
-    a {
-      color: #259797;
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-    a:hover {
-      color: #50d6d4da;
-    }
-    .clickable {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.3s ease;
       cursor: pointer;
-      text-decoration: underline;
     }
-    .modal-img {
-      width: 100%;
-      max-width: 300px;
+    
+    .btn-icon.edit {
+      background: rgba(102, 126, 234, 0.2);
+      color: #667eea;
+    }
+    
+    .btn-icon.edit:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+    .btn-icon.delete {
+      background: rgba(255, 71, 87, 0.2);
+      color: var(--error-color);
+    }
+    
+    .btn-icon.delete:hover {
+      background: var(--error-color);
+      color: white;
+    }
+    
+    .btn-icon.qr {
+      background: rgba(102, 126, 234, 0.2);
+      color: #667eea;
+    }
+    
+    .btn-icon.qr:hover {
+      background: #667eea;
+      color: white;
+    }
+    
+    .ticket-id {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+      gap: 10px;
+    }
+    
+    .page-info {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    
+    .pagination .page-link {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+      padding: 8px 12px;
+      margin: 0 2px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .pagination .page-link:hover {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border-color: #667eea;
+    }
+    
+    .pagination .page-item.active .page-link {
+      background: var(--primary-gradient);
+      border-color: #667eea;
+      color: white;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 768px) {
+      .list-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .list-actions {
+        justify-content: center;
+      }
+      
+      .table-container {
+        overflow-x: auto;
+      }
+      
+      .table-modern {
+        min-width: 600px;
+      }
     }
   </style>
 </head>
-<body class="p-4">
-  <div class="container">
-    <h2 class="mb-3">Entries for {{ event }}</h2>
-    <input
-      type="text"
-      id="searchInput"
-      class="form-control mb-3"
-      placeholder="Search by name, ticket ID or ID/phone..."
-      onkeyup="filterTable()"
-    />
-    <div class="table-responsive">
-      <table class="table table-dark table-striped">
-        <thead>
-          <tr>
-            <th>Ticket ID</th>
-            <th>Name</th>
-            <th>User id</th>
-            <th>Num People</th>
-            <th>Seats Left</th>
-            <th>Checked In</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for entry in entries %}
-          <tr id="row-{{ entry['ticket_id'] }}">
-            <td class="clickable" onclick="showQr('{{ entry['ticket_id'] }}')">
-              {{ entry['ticket_id'] }}
-            </td>
-            <td>{{ entry['name'] }}</td>
-            <td>{{ entry['user_id'] or '' }}</td>
-            <td>{{ entry['num_people'] }}</td>
-            <td class="seats-left">{{ entry['seats_left'] }}</td>
-            <td class="checked-in">{{ entry['checked_in'] }}</td>
-            <td>
-              {% if entry['seats_left'] > 0 %}
-                <button onclick="manualCheckin('{{ entry['ticket_id'] }}')">Manual Check-in</button>
-              {% else %}
-                All arrived
-              {% endif %}
-              <button onclick="deleteGuest('{{ entry['ticket_id'] }}')">Delete</button>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    <p class="mt-3"><a href="/dashboard">Back to Dashboard</a></p>
-  </div>
-
-  <!-- QR Code Modal -->
-  <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered text-center">
-      <div class="modal-content bg-dark text-light p-4">
-        <h5 id="qrTicketId"></h5>
-        <img id="qrImage" class="modal-img" src="" alt="QR Code" />
-        <button class="btn btn-secondary mt-3" data-bs-dismiss="modal">Close</button>
+<body>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-ticket-alt"></i>
+        <span>TicketScanner</span>
       </div>
-    </div>
+      
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/scan" class="nav-item">
+          <i class="fas fa-qrcode"></i>
+          <span>Scan QR</span>
+        </a>
+        <a href="/add" class="nav-item">
+          <i class="fas fa-plus"></i>
+          <span>Add Ticket</span>
+        </a>
+        <a href="/list" class="nav-item active">
+          <i class="fas fa-list"></i>
+          <span>Guest List</span>
+        </a>
+        <a href="/events" class="nav-item">
+          <i class="fas fa-calendar"></i>
+          <span>Events</span>
+        </a>
+        <a href="/stats" class="nav-item">
+          <i class="fas fa-chart-bar"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="/settings" class="nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <a href="/logout" class="nav-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else category }} animate-fade-in">
+              <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <div class="list-header">
+        <h1 class="list-title">
+          <i class="fas fa-users"></i> Guest List
+        </h1>
+        
+        <div class="list-actions">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="form-input" placeholder="Search guests...">
+          </div>
+          
+          <a href="/add" class="btn-modern">
+            <i class="fas fa-plus"></i> Add Ticket
+          </a>
+        </div>
+      </div>
+
+      {% if tickets %}
+        <div class="table-container">
+          <table class="table table-modern">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Ticket ID</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>People</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for ticket in tickets %}
+                <tr data-search="{{ ticket.name.lower() }} {{ ticket.email.lower() if ticket.email else '' }}" data-ticket-id="{{ ticket.ticket_id }}">
+                  <td class="guest-name-cell">
+                    <strong>{{ ticket.name }}</strong>
+                  </td>
+                  <td>
+                    <span class="ticket-id-cell">{{ ticket.ticket_id }}</span>
+                  </td>
+                  <td>{{ ticket.email or '-' }}</td>
+                  <td>{{ ticket.phone or '-' }}</td>
+                  <td class="people-cell">
+                    <span class="people-badge">{{ ticket.num_people }}</span>
+                  </td>
+                  <td class="amount-cell">
+                    {% if ticket.price %}
+                      ₹{{ "%.2f"|format(ticket.price) }}
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td class="status-cell">
+                    {% set checked_in_count = ticket.checked_in or 0 %}
+                    {% set total_people = ticket.num_people %}
+                    {% set remaining = total_people - checked_in_count %}
+                    
+                    {% if checked_in_count == 0 %}
+                      <span class="status-badge status-no-checkin">
+                        <i class="fas fa-times"></i> No Check-ins
+                      </span>
+                    {% elif checked_in_count == total_people %}
+                      <span class="status-badge status-checked-in">
+                        <i class="fas fa-check"></i> Checked In
+                      </span>
+                    {% else %}
+                      <span class="status-badge status-partial">
+                        <i class="fas fa-clock"></i> {{ checked_in_count }}/{{ total_people }} Checked In
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <small>
+                      {% if ticket.purchase_date %}
+                        {% if ticket.purchase_date is string %}
+                          {% if ticket.purchase_date|length == 19 and ticket.purchase_date[4] == '-' and ticket.purchase_date[7] == '-' %}
+                            {# Convert YYYY-MM-DD HH:MM:SS to DDMMYYYY #}
+                            {{ ticket.purchase_date[8:10] + ticket.purchase_date[5:7] + ticket.purchase_date[0:4] }}
+                          {% else %}
+                            {{ ticket.purchase_date }}
+                          {% endif %}
+                        {% else %}
+                          {{ ticket.purchase_date.strftime('%d%m%Y') if ticket.purchase_date else '-' }}
+                        {% endif %}
+                      {% else %}
+                        -
+                      {% endif %}
+                    </small>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button class="btn-icon qr" onclick="viewQR('{{ ticket.ticket_id }}')" title="View QR Code">
+                        <i class="fas fa-qrcode"></i>
+                      </button>
+                      <button class="btn-icon edit" onclick="editTicket('{{ ticket.id }}')" title="Edit">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button class="btn-icon delete" onclick="deleteTicket('{{ ticket.id }}')" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if pagination and pagination.pages > 1 %}
+          <div class="pagination-container">
+            <span class="page-info">
+              Page {{ pagination.page }} of {{ pagination.pages }}
+            </span>
+            
+            <nav>
+              <ul class="pagination">
+                {% if pagination.has_prev %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ pagination.prev_num }}&search={{ request.args.get('search', '') }}">
+                      <i class="fas fa-chevron-left"></i>
+                    </a>
+                  </li>
+                {% endif %}
+                
+                {% for page_num in pagination.iter_pages() %}
+                  {% if page_num %}
+                    <li class="page-item {{ 'active' if page_num == pagination.page else '' }}">
+                      <a class="page-link" href="?page={{ page_num }}&search={{ request.args.get('search', '') }}">
+                        {{ page_num }}
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link">...</span>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                
+                {% if pagination.has_next %}
+                  <li class="page-item">
+                    <a class="page-link" href="?page={{ pagination.next_num }}&search={{ request.args.get('search', '') }}">
+                      <i class="fas fa-chevron-right"></i>
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        {% endif %}
+      {% else %}
+        <div class="empty-state">
+          <i class="fas fa-users"></i>
+          <h3>No Tickets Found</h3>
+          <p>Start by adding some tickets to your event.</p>
+          <a href="/add" class="btn-modern">
+            <i class="fas fa-plus"></i> Add First Ticket
+          </a>
+        </div>
+      {% endif %}
+    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script>
-    function manualCheckin(ticket_id) {
-      fetch('/manual_checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ ticket_id: ticket_id })
-      })
-      .then(response => response.json())
-      .then(data => {
-        // ✅ Update the DOM without reload
-        const row = document.getElementById("row-" + ticket_id);
-        const seatsLeftCell = row.querySelector(".seats-left");
-        const checkedInCell = row.querySelector(".checked-in");
-        const newSeats = parseInt(seatsLeftCell.textContent) - 1;
-        const newCheckin = parseInt(checkedInCell.textContent) + 1;
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const searchTerm = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr');
+      
+      rows.forEach(row => {
+        const searchText = row.getAttribute('data-search');
+        if (searchText.includes(searchTerm)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    });
 
-        seatsLeftCell.textContent = newSeats;
-        checkedInCell.textContent = newCheckin;
-
-        if (newSeats <= 0) {
-          const actionsCell = row.querySelector("td:last-child");
-          actionsCell.innerHTML = "All arrived <button onclick=\"deleteGuest('" + ticket_id + "')\">Delete</button>";
+    // View QR code function
+    function viewQR(ticketId) {
+      // Get ticket data from the table row
+      const row = document.querySelector(`tr[data-ticket-id="${ticketId}"]`);
+      if (!row) {
+        alert('Ticket data not found');
+        return;
+      }
+      
+      const ticketData = {
+        name: row.querySelector('.guest-name-cell strong').textContent,
+        ticketId: ticketId,
+        email: row.querySelector('td:nth-child(3)').textContent,
+        phone: row.querySelector('td:nth-child(4)').textContent,
+        people: row.querySelector('.people-badge').textContent,
+        price: row.querySelector('.amount-cell').textContent,
+        status: row.querySelector('.status-badge').textContent.trim()
+      };
+      
+      const qrUrl = `/static/qrcodes/${ticketId}.png`;
+      
+      // Create modal for ticket view
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'ticket-view-modal';
+      
+      modalContent.innerHTML = `
+        <div class="ticket-view-header">
+          <h2><i class="fas fa-ticket-alt"></i> Event Ticket</h2>
+          <button class="close-btn" onclick="this.closest('.modal').remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="e-ticket">
+          <div class="e-ticket-header">
+            <div class="event-details">
+              <h2 class="event-name">${ticketData.event || 'Event'}</h2>
+              <div class="event-meta">
+                <p class="event-date-time">Date TBD</p>
+                <p class="event-venue">Venue TBD</p>
+              </div>
+            </div>
+            <div class="ticket-logo">
+              <i class="fas fa-ticket-alt"></i>
+            </div>
+          </div>
+          
+          <div class="e-ticket-body">
+            <div class="guest-section">
+              <h3 class="guest-name">${ticketData.name}</h3>
+              <p class="guest-subtitle">Admit ${ticketData.people}</p>
+              ${ticketData.email !== '-' ? `<p class="guest-email">${ticketData.email}</p>` : ''}
+            </div>
+            
+            <div class="qr-section">
+              <div class="qr-container">
+                <img src="${qrUrl}" alt="QR Code" class="qr-image" />
+              </div>
+              <p class="qr-label">Scan to Enter</p>
+              <p class="ticket-id">#${ticketData.ticketId}</p>
+            </div>
+          </div>
+          
+          <div class="e-ticket-footer">
+            <div class="entry-note">
+              <p>Strictly Invite Only · Show QR at Entry · 18+ Only</p>
+            </div>
+            <div class="contact-info">
+              <p class="contact-title">For Queries Contact:</p>
+              <div class="contact-details">
+                <p><i class="fas fa-user"></i> Event Organizer</p>
+                <p><i class="fas fa-phone"></i> +91 98765 43210</p>
+                <p><i class="fas fa-envelope"></i> organizer@example.com</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="ticket-view-actions">
+          <button class="action-btn primary" onclick="downloadTicket('${ticketId}')">
+            <i class="fas fa-download"></i> Download Ticket
+          </button>
+          <button class="action-btn secondary" onclick="shareTicket('${ticketId}')">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
+          <button class="action-btn" onclick="printTicket('${ticketId}')">
+            <i class="fas fa-print"></i> Print
+          </button>
+        </div>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Close modal when clicking outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
         }
       });
     }
+    
+    // Download ticket function
+    async function downloadTicket(ticketId) {
+      try {
+        // Get ticket data
+        const row = document.querySelector(`tr[data-ticket-id="${ticketId}"]`);
+        const ticketData = {
+          name: row.querySelector('.guest-name-cell strong').textContent,
+          ticketId: ticketId,
+          email: row.querySelector('td:nth-child(3)').textContent,
+          phone: row.querySelector('td:nth-child(4)').textContent,
+          people: row.querySelector('.people-badge').textContent,
+          price: row.querySelector('.amount-cell').textContent,
+          status: row.querySelector('.status-badge').textContent.trim()
+        };
+        
+        // Create ticket card HTML
+        const ticketCard = createTicketCard(ticketData);
+        
+        // Create a temporary container for better rendering
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+          position: fixed;
+          top: -9999px;
+          left: -9999px;
+          width: 800px;
+          height: 600px;
+          background: #000000;
+          padding: 40px;
+          color: white;
+          font-family: Arial, sans-serif;
+        `;
+        
+        // Add the ticket card to temp container
+        tempContainer.appendChild(ticketCard);
+        document.body.appendChild(tempContainer);
+        
+        // Convert to image using html2canvas
+        if (typeof html2canvas !== 'undefined') {
+          const canvas = await html2canvas(tempContainer, {
+            backgroundColor: '#000000',
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            width: 800,
+            height: 600,
+            logging: false
+          });
+          
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `ticket-${ticketId}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            // Clean up
+            document.body.removeChild(tempContainer);
+          });
+        } else {
+          // Fallback to QR code only
+          const link = document.createElement('a');
+          link.href = `/static/qrcodes/${ticketId}.png`;
+          link.download = `${ticketId}.png`;
+          link.click();
+          
+          // Clean up
+          document.body.removeChild(tempContainer);
+        }
+      } catch (err) {
+        console.error('Error downloading ticket:', err);
+        alert('Error downloading ticket. Please try again.');
+      }
+    }
+    
+    // Share ticket function
+    async function shareTicket(ticketId) {
+      try {
+        // Get ticket data
+        const row = document.querySelector(`tr[data-ticket-id="${ticketId}"]`);
+        const ticketData = {
+          name: row.querySelector('.guest-name-cell strong').textContent,
+          ticketId: ticketId,
+          email: row.querySelector('td:nth-child(3)').textContent,
+          phone: row.querySelector('td:nth-child(4)').textContent,
+          people: row.querySelector('.people-badge').textContent,
+          price: row.querySelector('.amount-cell').textContent,
+          status: row.querySelector('.status-badge').textContent.trim()
+        };
+        
+        // Create ticket card HTML
+        const ticketCard = createTicketCard(ticketData);
+        
+        // Create a temporary container for better rendering
+        const tempContainer = document.createElement('div');
+        tempContainer.style.cssText = `
+          position: fixed;
+          top: -9999px;
+          left: -9999px;
+          width: 800px;
+          height: 600px;
+          background: #000000;
+          padding: 40px;
+          color: white;
+          font-family: Arial, sans-serif;
+        `;
+        
+        // Add the ticket card to temp container
+        tempContainer.appendChild(ticketCard);
+        document.body.appendChild(tempContainer);
+        
+        // Convert to image using html2canvas
+        if (typeof html2canvas !== 'undefined') {
+          const canvas = await html2canvas(tempContainer, {
+            backgroundColor: '#000000',
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            width: 800,
+            height: 600,
+            logging: false
+          });
+          
+          canvas.toBlob(async (blob) => {
+            const file = new File([blob], `ticket-${ticketId}.png`, { type: 'image/png' });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              try {
+                await navigator.share({
+                  title: 'Event Ticket',
+                  text: `Ticket for ${ticketData.name}`,
+                  files: [file]
+                });
+              } catch (err) {
+                console.error('Share error:', err);
+                // Fallback to download
+                downloadTicket(ticketId);
+              }
+            } else {
+              // Fallback to download
+              downloadTicket(ticketId);
+            }
+            
+            // Clean up
+            document.body.removeChild(tempContainer);
+          });
+        } else {
+          // Fallback to QR code sharing
+          const img = document.querySelector(`img[src="/static/qrcodes/${ticketId}.png"]`);
+          if (img) {
+            const response = await fetch(img.src);
+            const blob = await response.blob();
+            const file = new File([blob], `${ticketId}.png`, { type: blob.type });
+            
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                title: 'QR Ticket',
+                text: `QR code for ${ticketData.name}`,
+                files: [file]
+              });
+            } else {
+              downloadTicket(ticketId);
+            }
+          }
+          
+          // Clean up
+          document.body.removeChild(tempContainer);
+        }
+      } catch (err) {
+        console.error('Error sharing ticket:', err);
+        alert('Error sharing ticket. Please try again.');
+      }
+    }
+    
+    // Print ticket function
+    function printTicket(ticketId) {
+      const row = document.querySelector(`tr[data-ticket-id="${ticketId}"]`);
+      const ticketData = {
+        name: row.querySelector('.guest-name-cell strong').textContent,
+        ticketId: ticketId,
+        email: row.querySelector('td:nth-child(3)').textContent,
+        phone: row.querySelector('td:nth-child(4)').textContent,
+        people: row.querySelector('.people-badge').textContent,
+        price: row.querySelector('.amount-cell').textContent,
+        status: row.querySelector('.status-badge').textContent.trim()
+      };
+      
+      const ticketCard = createTicketCard(ticketData);
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Print Ticket</title>
+            <style>
+              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
+              .ticket-card { 
+                max-width: 600px; 
+                margin: 0 auto; 
+                border: 2px solid #333; 
+                border-radius: 12px; 
+                padding: 20px; 
+                background: white;
+              }
+              .ticket-header { text-align: center; margin-bottom: 20px; }
+              .ticket-info { margin-bottom: 20px; }
+              .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+              .qr-section { text-align: center; margin-top: 20px; }
+              .qr-image { max-width: 150px; }
+              @media print { body { -webkit-print-color-adjust: exact; } }
+            </style>
+          </head>
+          <body>
+            ${ticketCard.outerHTML}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
+    // Create ticket card HTML
+    function createTicketCard(ticketData) {
+      const ticketCard = document.createElement('div');
+      ticketCard.className = 'ticket-card';
+      ticketCard.style.cssText = `
+        background: #000000;
+        border-radius: 20px;
+        padding: 40px;
+        color: white;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        position: relative;
+        overflow: hidden;
+        border: 2px solid #333;
+      `;
+      
+      // Add gradient top border
+      const topBorder = document.createElement('div');
+      topBorder.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+      `;
+      ticketCard.appendChild(topBorder);
+      
+      ticketCard.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 20px;">
+          <div style="flex: 1;">
+            <h2 style="font-size: 28px; font-weight: 700; margin: 0 0 12px 0; color: white;">${ticketData.event || 'Event'}</h2>
+            <div style="color: #ccc;">
+              <p style="font-size: 16px; margin: 0 0 8px 0; font-weight: 500;">Date TBD</p>
+              <p style="font-size: 14px; margin: 0; opacity: 0.8;">Venue TBD</p>
+            </div>
+          </div>
+          <div style="font-size: 32px; color: #667eea; margin-left: 20px;">
+            <i class="fas fa-ticket-alt"></i>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 40px; align-items: center;">
+          <div style="text-align: left;">
+            <h3 style="font-size: 24px; font-weight: 700; margin: 0 0 8px 0; color: white;">${ticketData.name}</h3>
+            <p style="font-size: 16px; color: #667eea; margin: 0 0 12px 0; font-weight: 600;">Admit ${ticketData.people}</p>
+            ${ticketData.email !== '-' ? `<p style="font-size: 14px; color: #ccc; margin: 0;">${ticketData.email}</p>` : ''}
+          </div>
+          
+          <div style="text-align: center;">
+            <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; display: inline-block;">
+              <img src="/static/qrcodes/${ticketData.ticketId}.png" alt="QR Code" style="max-width: 150px; height: auto; border-radius: 8px;">
+            </div>
+            <p style="font-size: 14px; color: #ccc; margin: 0 0 8px 0; font-weight: 500;">Scan to Enter</p>
+            <p style="font-family: 'Courier New', monospace; font-size: 12px; color: #667eea; margin: 0; font-weight: 600;">#${ticketData.ticketId}</p>
+          </div>
+        </div>
+        
+        <div style="border-top: 1px solid #333; padding-top: 20px;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <p style="font-size: 12px; color: #999; margin: 0; font-weight: 500; letter-spacing: 0.5px;">Strictly Invite Only · Show QR at Entry · 18+ Only</p>
+          </div>
+          <div style="margin: 20px 0; padding: 16px; background: rgba(102, 126, 234, 0.1); border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.3);">
+            <p style="font-size: 12px; color: #667eea; margin: 0 0 8px 0; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">For Queries Contact:</p>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <p style="font-size: 11px; color: #ccc; margin: 0; display: flex; align-items: center; gap: 6px;"><i style="color: #667eea; font-size: 10px; width: 12px;">👤</i> Event Organizer</p>
+              <p style="font-size: 11px; color: #ccc; margin: 0; display: flex; align-items: center; gap: 6px;"><i style="color: #667eea; font-size: 10px; width: 12px;">📞</i> +91 98765 43210</p>
+              <p style="font-size: 11px; color: #ccc; margin: 0; display: flex; align-items: center; gap: 6px;"><i style="color: #667eea; font-size: 10px; width: 12px;">✉️</i> organizer@example.com</p>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      return ticketCard;
+    }
 
-    function deleteGuest(ticket_id) {
-      if(confirm("Are you sure you want to delete this guest?")) {
-        fetch('/delete', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ ticket_id: ticket_id })
+    // Edit ticket function
+    function editTicket(ticketId) {
+      window.location.href = `/edit_ticket/${ticketId}`;
+    }
+
+    // Delete ticket function
+    function deleteTicket(ticketId) {
+      if (confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
+        fetch(`/delete_ticket/${ticketId}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          }
         })
         .then(response => response.json())
         .then(data => {
-          document.getElementById("row-" + ticket_id).remove();
+          if (data.success) {
+            location.reload();
+          } else {
+            alert('Error deleting ticket: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Error deleting ticket');
         });
       }
     }
 
-    function showQr(ticket_id) {
-      document.getElementById('qrTicketId').textContent = ticket_id;
-      document.getElementById('qrImage').src = `/static/qrcodes/${ticket_id}.png`;
-      const qrModal = new bootstrap.Modal(document.getElementById('qrModal'));
-      qrModal.show();
-    }
-
-    function filterTable() {
-      const input = document.getElementById("searchInput").value.toLowerCase();
-      const rows = document.querySelectorAll("tbody tr");
-    
-      rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(input) ? "" : "none";
+    // Add active class to current page
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const navItems = document.querySelectorAll('.nav-item');
+      
+      navItems.forEach(item => {
+        if (item.getAttribute('href') === currentPath) {
+          item.classList.add('active');
+        }
       });
-    }
-
-
-
+    });
   </script>
 </body>
 </html>

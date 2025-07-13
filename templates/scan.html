@@ -1,174 +1,956 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>QR Scanner</title>
+  <title>Scan QR - Ticket Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="/static/css/main.css" rel="stylesheet" />
   <style>
-    body {
-      background-color: #1b4042;
-      color: #aba5a5;
-      font-family: sans-serif;
-      padding: 20px;
-    }
-    h2 {
-      color: #aba5a5;
+    .scan-container {
       text-align: center;
-      margin-bottom: 20px;
+      max-width: 600px;
+      margin: 0 auto;
     }
-    #reader {
+    
+    .scan-header {
+      margin-bottom: 40px;
+    }
+    
+    .scan-header h2 {
+      font-size: var(--text-3xl);
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: var(--primary-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .scan-header p {
+      color: var(--text-secondary);
+      font-size: var(--text-lg);
+    }
+    
+    .scanner-area {
+      margin-bottom: 40px;
+    }
+    
+    .scanner-frame {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 0 auto;
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .scanner-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
-      max-width: 400px;
-      margin: auto;
-      border: 2px solid #259797;
+      height: 100%;
+      z-index: 10;
+      pointer-events: none;
+    }
+    
+    .corner-marker {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 3px solid #667eea;
+    }
+    
+    .corner-marker.top-left {
+      top: 20px;
+      left: 20px;
+      border-right: none;
+      border-bottom: none;
+    }
+    
+    .corner-marker.top-right {
+      top: 20px;
+      right: 20px;
+      border-left: none;
+      border-bottom: none;
+    }
+    
+    .corner-marker.bottom-left {
+      bottom: 20px;
+      left: 20px;
+      border-right: none;
+      border-top: none;
+    }
+    
+    .corner-marker.bottom-right {
+      bottom: 20px;
+      right: 20px;
+      border-left: none;
+      border-top: none;
+    }
+    
+    #scanner-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .scan-controls {
+      margin-bottom: 30px;
+    }
+    
+    .btn-scan {
+      background: var(--primary-gradient);
+      border: none;
       border-radius: 12px;
+      padding: 16px 32px;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      margin: 0 10px;
     }
-    #result {
-      margin-top: 20px;
+    
+    .btn-scan::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .btn-scan:hover::before {
+      left: 100%;
+    }
+    
+    .btn-scan:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-scan:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .scan-status {
+      margin: 20px 0;
       text-align: center;
-      font-size: 1.2em;
-      color: #aba5a5;
     }
-    a {
-      color: #259797;
-      text-decoration: none;
+    
+    .scan-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-card);
+      border-radius: 12px;
+      padding: 12px 20px;
+      border: 1px solid var(--border-color);
+      animation: pulse 2s infinite;
     }
-    a:hover {
-      color: #50d6d4da;
+    
+    .scan-indicator i {
+      color: #667eea;
+      font-size: 18px;
+    }
+    
+    .scan-indicator span {
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .scan-results {
+      margin-top: 30px;
+    }
+    
+    .result-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid var(--border-color);
+      display: none;
+    }
+    
+    .result-card.success {
+      border-color: var(--success-color);
+      background: rgba(0, 212, 170, 0.1);
+    }
+    
+    .result-card.error {
+      border-color: var(--error-color);
+      background: rgba(255, 71, 87, 0.1);
+    }
+    
+    .result-card i {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .result-card.success i {
+      color: var(--success-color);
+    }
+    
+    .result-card.error i {
+      color: var(--error-color);
+    }
+    
+    .result-card h3 {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .guest-name {
+      font-size: var(--text-lg);
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    
+    .seats-left {
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+    }
+    
+    .manual-input {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 30px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .manual-input h4 {
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    
+    .manual-form {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+    }
+    
+    .manual-form .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    
+    @media (max-width: 768px) {
+      .scanner-frame {
+        width: 250px;
+        height: 250px;
+      }
+      
+      .manual-form {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .btn-scan {
+        margin: 5px;
+        padding: 12px 24px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container text-center">
-    <h2>Scan Ticket QR</h2>
-    <div id="reader"></div>
-    <div id="result"></div>
-    <p class="mt-3"><a href="/dashboard">Back to Dashboard</a></p>
-  </div>
-
-  <!-- Modal -->
-  <div class="modal fade" id="guestModal" tabindex="-1" aria-labelledby="guestModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content bg-dark text-white">
-        <div class="modal-header">
-          <h5 class="modal-title" id="guestModalLabel">Guests Arrived</h5>
-          <button type="button" class="btn-close bg-light" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p id="modalTicketInfo"></p>
-          <input type="number" id="numArrived" class="form-control" min="1" />
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="submitCheckin">Submit</button>
-        </div>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <i class="fas fa-ticket-alt"></i>
+        <span>TicketScanner</span>
       </div>
-    </div>
-  </div>
-
-  <script>
-  let html5QrcodeScanner;
-  let scannerActive = true;
-  let processingScan = false;
-
-  function sendScan(ticket_id) {
-    if (!scannerActive || processingScan) return;
-    processingScan = true;
+      
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="/scan" class="nav-item active">
+          <i class="fas fa-qrcode"></i>
+          <span>Scan QR</span>
+        </a>
+        <a href="/add" class="nav-item">
+          <i class="fas fa-plus"></i>
+          <span>Add Ticket</span>
+        </a>
+        <a href="/list" class="nav-item">
+          <i class="fas fa-list"></i>
+          <span>Guest List</span>
+        </a>
+        <a href="/events" class="nav-item">
+          <i class="fas fa-calendar"></i>
+          <span>Events</span>
+        </a>
+        <a href="/stats" class="nav-item">
+          <i class="fas fa-chart-bar"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="/settings" class="nav-item">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+        <a href="/logout" class="nav-item">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
     
-    fetch('/scan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ ticket_id: ticket_id })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.status === "valid") {
-        document.getElementById("result").innerHTML =
-          `✅ Valid Ticket<br>Name: ${data.name}<br>Seats left: ${data.seats_left}`;
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ 'error' if category == 'error' else category }} animate-fade-in">
+              <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
-        if (data.is_last_entry) {
-          document.getElementById("result").innerHTML += `<br>⚠️ This is the last entry for this ticket.`;
-          setTimeout(() => {
-            fetch('/checkin', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ ticket_id: ticket_id, num_people: 1 })
-            })
-            .then(res => res.json())
-            .then(result => {
-              if (result.status === "success") {
-                document.getElementById("result").innerHTML +=
-                  `<br>✅ 1 guest checked in.<br>${result.message}`;
-                // Stop scanner and prevent further scans
-                if (html5QrcodeScanner) {
-                  html5QrcodeScanner.clear();
-                }
-                scannerActive = false;
-                document.getElementById("result").innerHTML += `<br><button class='btn btn-success mt-3' onclick='window.location.reload()'>Scan Another Ticket</button>`;
-              } else {
-                document.getElementById("result").innerHTML +=
-                  `<br>❌ Check-in failed: ${result.message}`;
-              }
-              processingScan = false;
-            })
-            .catch(error => {
-              document.getElementById("result").innerHTML +=
-                `<br>❌ Error during check-in: ${error.message}`;
-              processingScan = false;
-            });
-          }, 500);
-        } else if (data.seats_left > 1) {
-          const num = prompt(`Valid Ticket for ${data.name}.\nHow many guests arrived? (max ${data.seats_left})`);
-          const num_people = parseInt(num);
-
-          if (!isNaN(num_people) && num_people > 0 && num_people <= data.seats_left) {
-            fetch('/checkin', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              credentials: 'include',
-              body: JSON.stringify({ ticket_id: ticket_id, num_people: num_people })
-            })
-            .then(res => res.json())
-            .then(result => {
-              document.getElementById("result").innerHTML +=
-                `<br>✅ ${num_people} guests checked in.<br>${result.message}`;
-              processingScan = false;
-            });
-          } else {
-            document.getElementById("result").innerHTML += `<br>❌ Invalid number entered.`;
-            processingScan = false;
-          }
-        } else {
-          processingScan = false;
-        }
-      } else {
-        document.getElementById("result").innerHTML = `❌ Invalid: ${data.message}`;
-        processingScan = false;
-      }
-    })
-    .catch(error => {
-      document.getElementById("result").innerHTML = `❌ Error: ${error.message}`;
-      processingScan = false;
-    });
-  }
-
-  function onScanSuccess(decodedText, decodedResult) {
-    sendScan(decodedText);
-  }
-
-  window.onload = function() {
-    html5QrcodeScanner = new Html5QrcodeScanner(
-      "reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
-  }
-</script>
+      <div class="scan-container">
+        <div class="scan-header">
+          <h2>QR Code Scanner</h2>
+          <p>Point your camera at a QR code to check in guests</p>
+        </div>
+        
+        <div class="scanner-area">
+          <div class="scanner-frame">
+            <div class="scanner-overlay">
+              <div class="corner-marker top-left"></div>
+              <div class="corner-marker top-right"></div>
+              <div class="corner-marker bottom-left"></div>
+              <div class="corner-marker bottom-right"></div>
+            </div>
+            <video id="scanner-video" autoplay muted></video>
+          </div>
+        </div>
+        
+        <div class="scan-controls">
+          <button id="startScan" class="btn-scan">
+            <i class="fas fa-camera"></i> Start Camera
+          </button>
+          <button id="stopScan" class="btn-scan" disabled>
+            <i class="fas fa-stop"></i> Stop Camera
+          </button>
+        </div>
+        
+        <div id="scanStatus" class="scan-status" style="display: none;">
+          <div class="scan-indicator">
+            <i class="fas fa-qrcode"></i>
+            <span>Scanning for QR codes...</span>
+          </div>
+        </div>
+        
+        <div class="scan-results">
+          <div class="result-card success" id="successResult">
+            <i class="fas fa-check-circle"></i>
+            <h3>Check-in Successful!</h3>
+            <p class="guest-name" id="successGuestName"></p>
+            <p class="seats-left" id="successSeatsLeft"></p>
+          </div>
+          
+          <div class="result-card error" id="errorResult">
+            <i class="fas fa-times-circle"></i>
+            <h3>Invalid Ticket</h3>
+            <p id="errorMessage"></p>
+          </div>
+        </div>
+        
+        <div class="manual-input">
+          <h4>
+            <i class="fas fa-keyboard"></i> Manual Entry
+          </h4>
+          <div class="manual-form">
+            <div class="form-group">
+              <label for="ticket_id">Ticket ID</label>
+              <input type="text" name="ticket_id" id="ticket_id" class="form-input" placeholder="Enter ticket ID manually (e.g., TKT1752349975)">
+            </div>
+            <button type="button" onclick="checkManualTicket()" class="btn-modern">
+              <i class="fas fa-search"></i> Check Ticket
+            </button>
+          </div>
+        </div>
+        
+        {% if ticket %}
+          <div class="manual-result mt-4">
+            <div class="checkin-modal" style="margin: 0 auto; max-width: 500px;">
+              <div class="checkin-header">
+                <div class="checkin-icon">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>Ticket Found!</h2>
+                <p class="guest-name">{{ ticket.name }}</p>
+                <p class="seats-info">{{ ticket.seats_left }} seats left</p>
+              </div>
+              
+              <div class="checkin-body">
+                <div class="checkin-form">
+                  <label for="manualCheckInCount">How many people to check in?</label>
+                  <div class="number-input">
+                    <button type="button" onclick="decrementManualCount()" class="number-btn">-</button>
+                    <input type="number" id="manualCheckInCount" min="1" max="{{ ticket.seats_left }}" value="1">
+                    <button type="button" onclick="incrementManualCount()" class="number-btn">+</button>
+                  </div>
+                  <p class="input-note">Maximum {{ ticket.seats_left }} people allowed</p>
+                </div>
+              </div>
+              
+              <div class="checkin-actions">
+                <button onclick="checkInTicket('{{ ticket.ticket_id }}')" class="btn-checkin">
+                  <i class="fas fa-check"></i> Check In
+                </button>
+                <button onclick="resetManualForm()" class="btn-cancel">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    let video = document.getElementById('scanner-video');
+    let canvas = document.createElement('canvas');
+    let context = canvas.getContext('2d');
+    let scanning = false;
+    let stream = null;
+
+    // Start camera
+    document.getElementById('startScan').addEventListener('click', async () => {
+      try {
+        // Stop any existing stream
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        
+        // Check if mediaDevices is available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Camera access not supported in this browser. Please use a modern browser with camera support.');
+        }
+        
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
+        });
+        
+        video.srcObject = stream;
+        video.play();
+        
+        // Wait for video to be ready
+        video.addEventListener('loadedmetadata', () => {
+          scanning = true;
+          document.getElementById('startScan').disabled = true;
+          document.getElementById('stopScan').disabled = false;
+          document.getElementById('scanStatus').style.display = 'block';
+          scanQR();
+        });
+        
+      } catch (err) {
+        console.error('Camera error:', err);
+        let errorMessage = 'Camera error: ' + err.message;
+        
+        if (err.name === 'NotAllowedError') {
+          errorMessage = 'Camera access denied. Please allow camera access and try again.';
+        } else if (err.name === 'NotFoundError') {
+          errorMessage = 'No camera found. Please connect a camera and try again.';
+        } else if (err.name === 'NotSupportedError') {
+          errorMessage = 'Camera not supported. Please use HTTPS or a different browser.';
+        } else if (err.message.includes('not supported')) {
+          errorMessage = 'Camera access not supported. Please use HTTPS or a modern browser.';
+        }
+        
+        alert(errorMessage);
+        console.error('Full error:', err);
+      }
+    });
+
+    // Stop camera
+    document.getElementById('stopScan').addEventListener('click', () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+      scanning = false;
+      document.getElementById('startScan').disabled = false;
+      document.getElementById('stopScan').disabled = true;
+      document.getElementById('scanStatus').style.display = 'none';
+    });
+
+    // QR Code scanning function
+    function scanQR() {
+      if (!scanning) return;
+
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        
+        let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // Try jsQR first
+        let code = jsQR(imageData.data, imageData.width, imageData.height);
+        
+        if (code) {
+          console.log('QR Code detected (jsQR):', code.data);
+          handleQRCode(code.data);
+          return;
+        }
+        
+        // Try ZXing as fallback
+        try {
+          const zxing = new ZXing.BrowserQRCodeReader();
+          zxing.decodeFromCanvas(canvas).then(result => {
+            if (result) {
+              console.log('QR Code detected (ZXing):', result.text);
+              handleQRCode(result.text);
+            }
+          }).catch(() => {
+            // Continue scanning
+          });
+        } catch (e) {
+          // ZXing not available, continue with jsQR
+        }
+      }
+      
+      requestAnimationFrame(scanQR);
+    }
+    
+    // Handle QR code data
+    function handleQRCode(data) {
+      // Stop scanning temporarily
+      scanning = false;
+      
+      // Clean the data (remove any extra whitespace or special characters)
+      const cleanData = data.trim();
+      
+      // Check if it looks like a ticket ID
+      if (cleanData.startsWith('TKT') || cleanData.length > 5) {
+        checkTicket(cleanData);
+      } else {
+        showResult('error', 'Invalid QR code format. Please scan a valid ticket QR code.');
+        // Resume scanning after 2 seconds
+        setTimeout(() => {
+          scanning = true;
+          scanQR();
+        }, 2000);
+      }
+    }
+
+    // Check ticket function
+    async function checkTicket(ticketId) {
+      try {
+        const response = await fetch('/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ticket_id: ticketId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showCheckInDialog(ticketId, result.guest_name, result.seats_left);
+        } else {
+          showResult('error', result.message);
+        }
+      } catch (err) {
+        console.error('Error checking ticket:', err);
+        showResult('error', 'Network error. Please try again.');
+      }
+    }
+
+    // Show check-in dialog
+    function showCheckInDialog(ticketId, guestName, seatsLeft) {
+      const maxPeople = parseInt(seatsLeft.split(' ')[0]);
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      
+      const modalContent = document.createElement('div');
+      modalContent.className = 'checkin-modal';
+      
+      modalContent.innerHTML = `
+        <div class="checkin-header">
+          <div class="checkin-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h2>Ticket Found!</h2>
+          <p class="guest-name">${guestName}</p>
+          <p class="seats-info">${seatsLeft} available</p>
+        </div>
+        
+        <div class="checkin-body">
+          <div class="checkin-form">
+            <label for="checkInCount">How many people to check in?</label>
+            <div class="number-input">
+              <button type="button" onclick="decrementCount()" class="number-btn">-</button>
+              <input type="number" id="checkInCount" min="1" max="${maxPeople}" value="1">
+              <button type="button" onclick="incrementCount()" class="number-btn">+</button>
+            </div>
+            <p class="input-note">Maximum ${maxPeople} people allowed</p>
+          </div>
+        </div>
+        
+        <div class="checkin-actions">
+          <button onclick="performCheckIn('${ticketId}')" class="btn-checkin">
+            <i class="fas fa-check"></i> Check In
+          </button>
+          <button onclick="this.closest('.modal').remove()" class="btn-cancel">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+        </div>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Close modal when clicking outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+    
+    // Number input functions
+    function decrementCount() {
+      const input = document.getElementById('checkInCount');
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
+      }
+    }
+    
+    function incrementCount() {
+      const input = document.getElementById('checkInCount');
+      const currentValue = parseInt(input.value);
+      const maxValue = parseInt(input.max);
+      if (currentValue < maxValue) {
+        input.value = currentValue + 1;
+      }
+    }
+    
+    // Manual count functions
+    function decrementManualCount() {
+      const input = document.getElementById('manualCheckInCount');
+      const currentValue = parseInt(input.value);
+      if (currentValue > 1) {
+        input.value = currentValue - 1;
+      }
+    }
+    
+    function incrementManualCount() {
+      const input = document.getElementById('manualCheckInCount');
+      const currentValue = parseInt(input.value);
+      const maxValue = parseInt(input.max);
+      if (currentValue < maxValue) {
+        input.value = currentValue + 1;
+      }
+    }
+    
+    function resetManualForm() {
+      document.getElementById('ticket_id').value = '';
+      location.reload();
+    }
+
+    // Perform check-in
+    async function performCheckIn(ticketId) {
+      const count = parseInt(document.getElementById('checkInCount').value);
+      
+      try {
+        const response = await fetch('/checkin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            ticket_id: ticketId, 
+            num_people: count 
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showResult('success', result.message);
+          // Close modal
+          document.querySelector('.modal').remove();
+          // Refresh page after 2 seconds
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showResult('error', result.message);
+        }
+      } catch (err) {
+        console.error('Error checking in ticket:', err);
+        showResult('error', 'Network error. Please try again.');
+      }
+    }
+
+    // Show result function
+    function showResult(type, message, additional = '') {
+      const successResult = document.getElementById('successResult');
+      const errorResult = document.getElementById('errorResult');
+      
+      if (type === 'success') {
+        document.getElementById('successGuestName').textContent = message;
+        document.getElementById('successSeatsLeft').textContent = additional;
+        successResult.style.display = 'block';
+        errorResult.style.display = 'none';
+        
+        // Play success sound
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+        audio.play().catch(() => {});
+      } else {
+        document.getElementById('errorMessage').textContent = message;
+        errorResult.style.display = 'block';
+        successResult.style.display = 'none';
+      }
+      
+      // Hide result after 3 seconds
+      setTimeout(() => {
+        successResult.style.display = 'none';
+        errorResult.style.display = 'none';
+      }, 3000);
+    }
+
+    // Manual ticket checking function
+    async function checkManualTicket() {
+      const ticketId = document.getElementById('ticket_id').value.trim();
+      
+      if (!ticketId) {
+        showResult('error', 'Please enter a ticket ID');
+        return;
+      }
+      
+      try {
+        const response = await fetch('/scan', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ticket_id: ticketId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showManualCheckInDialog(ticketId, result.guest_name, result.seats_left);
+        } else {
+          showResult('error', result.message);
+        }
+      } catch (err) {
+        console.error('Error checking ticket:', err);
+        showResult('error', 'Network error. Please try again.');
+      }
+    }
+
+    // Show manual check-in dialog
+    function showManualCheckInDialog(ticketId, guestName, seatsLeft) {
+      const maxPeople = parseInt(seatsLeft.split(' ')[0]);
+      
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      `;
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.cssText = `
+        background: var(--bg-card);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        max-width: 400px;
+        border: 1px solid var(--border-color);
+      `;
+      
+      modalContent.innerHTML = `
+        <div style="margin-bottom: 20px;">
+          <i class="fas fa-check-circle" style="font-size: 48px; color: var(--success-color); margin-bottom: 16px;"></i>
+          <h3 style="margin-bottom: 8px; color: var(--text-primary);">Ticket Found!</h3>
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">${guestName}</p>
+          <p style="color: var(--text-secondary); font-size: 14px;">${seatsLeft} available</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; color: var(--text-primary);">How many people to check in?</label>
+          <input type="number" id="manualCheckInCount" min="1" max="${maxPeople}" value="1" style="
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 16px;
+            text-align: center;
+          ">
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+          <button onclick="performManualCheckIn('${ticketId}')" style="
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: white;
+            cursor: pointer;
+            flex: 1;
+          ">Check In</button>
+          <button onclick="this.closest('.modal').remove()" style="
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 24px;
+            color: var(--text-primary);
+            cursor: pointer;
+            flex: 1;
+          ">Cancel</button>
+        </div>
+      `;
+      
+      modalContent.classList.add('modal');
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Close modal when clicking outside
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+    }
+
+    // Perform manual check-in
+    async function performManualCheckIn(ticketId) {
+      const count = parseInt(document.getElementById('manualCheckInCount').value);
+      
+      try {
+        const response = await fetch('/checkin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            ticket_id: ticketId, 
+            num_people: count 
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showResult('success', result.message);
+          // Close modal
+          document.querySelector('.modal').remove();
+          // Clear input
+          document.getElementById('ticket_id').value = '';
+          // Refresh page after 2 seconds
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showResult('error', result.message);
+        }
+      } catch (err) {
+        console.error('Error checking in ticket:', err);
+        showResult('error', 'Network error. Please try again.');
+      }
+    }
+
+    // Manual check-in function (for the old template version)
+    async function checkInTicket(ticketId) {
+      const count = parseInt(document.getElementById('manualCheckInCount').value);
+      
+      try {
+        const response = await fetch('/checkin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            ticket_id: ticketId, 
+            num_people: count 
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showResult('success', result.message);
+          // Refresh page after successful check-in
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showResult('error', result.message);
+        }
+      } catch (err) {
+        console.error('Error checking in ticket:', err);
+        showResult('error', 'Network error. Please try again.');
+      }
+    }
+
+    // Add active class to current page
+    document.addEventListener('DOMContentLoaded', function() {
+      const currentPath = window.location.pathname;
+      const navItems = document.querySelectorAll('.nav-item');
+      
+      navItems.forEach(item => {
+        if (item.getAttribute('href') === currentPath) {
+          item.classList.add('active');
+        }
+      });
+      
+      // Add keyboard shortcut for manual entry
+      document.getElementById('ticket_id').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          checkManualTicket();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
