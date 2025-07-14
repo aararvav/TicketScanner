@@ -207,7 +207,7 @@ TicketScanner/
   </thead>
   <tbody>
     <tr>
-      <td><strong>Aaravbir Singh Bhatia</strong></td>
+      <td><strong>Aarav</strong></td>
       <td>Main Project Lead / Backend</td>
       <td>
         <a href="https://www.linkedin.com/in/aararvav/" target="_blank">🔗 LinkedIn</a> |
