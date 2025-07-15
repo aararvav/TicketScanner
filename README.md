@@ -2,7 +2,7 @@
 <p align="center">
   <img src="https://img.icons8.com/ios-filled/100/000000/qr-code.png" width="80" alt="QR Code Icon"/>
 </p>
-<h1 align="center">🎟️ TicketScanner</h1>
+<h1 align="center">🎟️ Evenizer</h1>
 <p align="center">
   <b>The Ultimate Event Ticketing & QR Check-in Platform</b><br/>
   <i>Modern, mobile-friendly, and built for event organizers</i>
@@ -26,7 +26,7 @@
 ---
 
 ## 📖 Description
-> **TicketScanner** is a web-based app for managing event guest lists, generating QR-coded tickets, and streamlining check-in at events. It provides a secure host login, event creation, ticket management, and real-time QR code scanning for efficient guest entry. Designed for event organizers who need a simple, reliable, and fast solution for handling guests and tickets.
+> **Evenizer** is a web-based app for managing event guest lists, generating QR-coded tickets, and streamlining check-in at events. It provides a secure host login, event creation, ticket management, and real-time QR code scanning for efficient guest entry. Designed for event organizers who need a simple, reliable, and fast solution for handling guests and tickets.
 
 ---
 
@@ -49,7 +49,7 @@
 ---
 
 ## 📸 Screenshots & Demo
-Take a visual tour of TicketScanner's core features:
+Take a visual tour of Evenizer's core features:
 
 <table>
   <tr>
